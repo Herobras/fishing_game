@@ -4,6 +4,7 @@
 #include <memory>
 #include <random>
 #include <chrono>
+#include <string>
 
 
 using namespace std::chrono;
@@ -20,6 +21,13 @@ enum Direction {
     DOWN_RIGHT,
     DOWN_LEFT
 };
+
+enum class EntityType {
+    PLAYER,
+    ENEMY
+};
+
+
 
 
 const int SCREEN_WIDTH = 800;
@@ -62,6 +70,10 @@ class Entity {
         virtual void draw() const = 0;
 
         virtual void update (float delta) = 0;
+
+        virtual EntityType get_type() const = 0;
+
+        virtual Rectangle getBoundingBox() const = 0;
 
         void set_position(float x, float y) { posX = x; posY = y; }
 
@@ -144,7 +156,15 @@ class MyRectangle : public Entity {
             }
             return;
         }
-};
+        Rectangle getBoundingBox() const {
+            Rectangle ret;
+            ret.x=get_posX();
+            ret.y=get_posY();
+            ret.width=width;
+            ret.height=height;
+            return ret;
+        }
+    };
 
 class Player : public MyRectangle {
     const float base_speed; 
@@ -153,6 +173,8 @@ class Player : public MyRectangle {
         Player(int w, int h, Color col, float s) : MyRectangle(w,h,col), base_speed(s) {}
         Player(float x,float y,int w, int h, Color col, float s) : MyRectangle(x,y,w,h,col), base_speed(s) {}
         void update(float delta) override {movSpeed();move(getInput(),speed*delta);}
+
+        EntityType get_type() const override { return EntityType::PLAYER; }
 
         Direction getInput(){
             bool up=false,down=false,left=false,right=false;
@@ -224,7 +246,7 @@ class Player : public MyRectangle {
                 return DOWN;
             }
             
-            if (dirh = NONE){
+            if (dirh == NONE){
                 return dirv;
             }
 
@@ -262,6 +284,8 @@ class Enemy : public MyRectangle {
             born_date = duration_cast<milliseconds>(now.time_since_epoch()).count();
             move_dir = NONE;
         }
+
+        EntityType get_type() const override { return EntityType::ENEMY; }
 
         void update(float delta) override {
             move(move_dir,speed*delta);
@@ -306,35 +330,56 @@ int main()
 
     entities.push_back(make_unique<Player>(player_posX, player_posY, player_width, player_height, player_col, speed));
 
-    float enemy_posX = random_int(SCREEN_WIDTH);
-    float enemy_posY = random_int(SCREEN_HEIGHT);
+    
     int enemy_width = player_width/2;
     int enemy_height = player_height/2;
+    float enemy_posX = random_int(SCREEN_WIDTH-enemy_width);
+    float enemy_posY = random_int(SCREEN_HEIGHT-enemy_height);
     Color enemy_col = RED;
     entities.push_back(make_unique<Enemy>(enemy_posX, enemy_posY, enemy_width, enemy_height, enemy_col, speed));
 
+
     float deltaTime;
+
+    int contador = 0;
+    string texto_contador = "Contador = 0";
+
+
+    auto now = system_clock::now();
+    int inicio = duration_cast<milliseconds>(now.time_since_epoch()).count();
+    int actual = inicio;
+
+    int delta_enemies =1000;
 
     while (!WindowShouldClose())
     {
         deltaTime = GetFrameTime();
-        //cout << deltaTime << '\n';
-        for (auto& e : entities){ // como recorrer vector
-            e->update(deltaTime);
-            // for (auto it = entities.begin(); it != entities.end(); ) {
-            //     if (/* condición para borrar */) {
-            //         it = entities.erase(it); // borra y devuelve el siguiente
-            //     } else {
-            //         ++it;
-            //     }
-            // }
+        for (auto it = entities.begin(); it != entities.end();){
+            (*it)->update(deltaTime);
+            if ((*it)->get_type() == EntityType::ENEMY) {
+                if (CheckCollisionRecs(entities.at(0)->getBoundingBox(), (*it)->getBoundingBox())){
+                    it = entities.erase(it);
+                    contador++;
+                    texto_contador = "Contador = " + to_string(contador);
+                    continue;
+                } 
+            } 
+            ++it;
         }
+        now = system_clock::now();
+        actual = duration_cast<milliseconds>(now.time_since_epoch()).count();
+        if (actual - inicio >= delta_enemies && entities.size()-1 < MAX_ENEMIES){
+            inicio = actual;
+            entities.push_back(make_unique<Enemy>(random_int(SCREEN_WIDTH-enemy_width), random_int(SCREEN_HEIGHT-enemy_height), enemy_width, enemy_height, enemy_col, speed));
+        }
+        //cout << "Cantidad de entidades: " << entities.size() << endl;
         BeginDrawing();
-            backgroundDraw(bkg_color,"Contador = ", 2, 0, 20, BLACK);
+            backgroundDraw(bkg_color,texto_contador.c_str(), 2, 0, 20, BLACK);
             for (auto& e : entities){ // como recorrer vector
                 e->draw();
             }
         EndDrawing();
+        
     }
     CloseWindow();
     return 0;

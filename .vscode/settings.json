@@ -3,6 +3,7 @@
         "random": "cpp",
         "iostream": "cpp",
         "xutility": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "vector": "cpp"
     }
 }
