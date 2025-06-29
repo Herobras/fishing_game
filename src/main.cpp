@@ -43,17 +43,17 @@ int random_int(int range) {
 
 class Entity {
     protected:
-        int posX, posY;
+        float posX, posY;
     public:
         Entity(){posX = 0; posY = 0;}
-        Entity(int x,int y){posX = x; posY = y;}
+        Entity(float x,float y){posX = x; posY = y;}
         virtual ~Entity() {}
 
-        int get_posX() const {
+        float get_posX() const {
             return posX;
         }
 
-        int get_posY() const {
+        float get_posY() const {
             return posY;
         }
 
@@ -61,11 +61,11 @@ class Entity {
 
         virtual void update () = 0;
 
-        void set_position(int x, int y) { posX = x; posY = y; }
+        void set_position(float x, float y) { posX = x; posY = y; }
 
-        void move(Direction dir, int distance){
-            int _posX = posX;
-            int _posY = posY;
+        void move(Direction dir, float distance){
+            float _posX = posX;
+            float _posY = posY;
             switch (dir) {
                 case UP:   _posY-=distance;break;
                 case DOWN: _posY+=distance;break;
@@ -80,7 +80,7 @@ class Entity {
             bounds_check_x(_posX);
             bounds_check_y(_posY);
         }
-        virtual void bounds_check_x(int &x){
+        virtual void bounds_check_x(float &x){
             if (x>SCREEN_WIDTH){
                 posX = SCREEN_WIDTH;
             }
@@ -92,7 +92,7 @@ class Entity {
             }
             return;
         }
-        virtual void bounds_check_y(int &y){
+        virtual void bounds_check_y(float &y){
             if (y>SCREEN_HEIGHT){
                 posY = SCREEN_HEIGHT;
             }
@@ -111,14 +111,14 @@ class MyRectangle : public Entity {
         Color color;
     public:
         MyRectangle(int w, int h, Color col){width=w;height=h;color = col;}
-        MyRectangle(int x,int y,int w, int h, Color col) : Entity(x,y) {width=w;height=h;color = col;}
+        MyRectangle(float x,float y,int w, int h, Color col) : Entity(x,y) {width=w;height=h;color = col;}
         void update() override {}
 
         void draw() const {
-            DrawRectangle(posX,posY,width,height,color);
+            DrawRectangle(int(posX),int(posY),width,height,color);
         }
 
-        void bounds_check_x(int &x){
+        void bounds_check_x(float &x){
             if (x>SCREEN_WIDTH-width){
                 posX = SCREEN_WIDTH-width;
             }
@@ -130,7 +130,7 @@ class MyRectangle : public Entity {
             }
             return;
         }
-        void bounds_check_y(int &y){
+        void bounds_check_y(float &y){
             if (y>SCREEN_HEIGHT-height){
                 posY = SCREEN_HEIGHT-height;
             }
@@ -145,10 +145,10 @@ class MyRectangle : public Entity {
 };
 
 class Player : public MyRectangle {
-    int move_d;
+    float move_d;
     public:
-        Player(int w, int h, Color col, int d) : MyRectangle(w,h,col) {move_d = d;}
-        Player(int x,int y,int w, int h, Color col, int d) : MyRectangle(x,y,w,h,col) {move_d = d;}
+        Player(int w, int h, Color col, float d) : MyRectangle(w,h,col) {move_d = d;}
+        Player(float x,float y,int w, int h, Color col, float d) : MyRectangle(x,y,w,h,col) {move_d = d;}
         void update() override {move(getInput(),move_d*movSpeed());}
 
         Direction getInput(){
@@ -230,7 +230,7 @@ class Player : public MyRectangle {
 
             return NONE;
         }
-        int movSpeed(){
+        float movSpeed(){
             if (IsKeyDown(KEY_LEFT_SHIFT)){
                     return 2;
                 }
@@ -239,16 +239,16 @@ class Player : public MyRectangle {
                 }
         }
         
-        void modify_dist (int d){
+        void modify_dist (float d){
             move_d = d;
         }
 };
 
 class Enemy : public MyRectangle {
-    int move_d;
+    float move_d;
     public:
-        Enemy(int w, int h, Color col, int d) : MyRectangle(w,h,col) {move_d = d;}
-        Enemy(int x,int y,int w, int h, Color col, int d) : MyRectangle(x,y,w,h,col) {move_d = d;}
+        Enemy(int w, int h, Color col, float d) : MyRectangle(w,h,col) {move_d = d;}
+        Enemy(float x,float y,int w, int h, Color col, float d) : MyRectangle(x,y,w,h,col) {move_d = d;}
 
         void update() override {move(random_dir(),move_d);}
 };
@@ -273,10 +273,10 @@ int main()
     const int player_width = SCREEN_WIDTH /10;
     const int player_height = SCREEN_HEIGHT /10;
 
-    int player_posX = SCREEN_WIDTH/2-player_width/2;
-    int player_posY = SCREEN_HEIGHT/2-player_height/2;
+    float player_posX = SCREEN_WIDTH/2-player_width/2;
+    float player_posY = SCREEN_HEIGHT/2-player_height/2;
 
-    int mov_amount = 3;
+    float mov_amount = 3;
     Direction move = NONE;
 
     Color player_col = GREEN;
@@ -285,8 +285,8 @@ int main()
 
     entities.push_back(make_unique<Player>(player_posX, player_posY, player_width, player_height, player_col, mov_amount));
 
-    int enemy_posX = random_int(SCREEN_WIDTH);
-    int enemy_posY = random_int(SCREEN_HEIGHT);
+    float enemy_posX = random_int(SCREEN_WIDTH);
+    float enemy_posY = random_int(SCREEN_HEIGHT);
     int enemy_width = player_width/2;
     int enemy_height = player_height/2;
     Color enemy_col = RED;
