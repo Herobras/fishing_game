@@ -1,10 +1,12 @@
 #include "raylib.h"
-//#include <iostream>
+#include <iostream>
 #include <vector>
 #include <memory>
 #include <random>
+#include <chrono>
 
 
+using namespace std::chrono;
 using namespace std;
 
 enum Direction {
@@ -59,7 +61,7 @@ class Entity {
 
         virtual void draw() const = 0;
 
-        virtual void update () = 0;
+        virtual void update (float delta) = 0;
 
         void set_position(float x, float y) { posX = x; posY = y; }
 
@@ -107,12 +109,12 @@ class Entity {
 };
 
 class MyRectangle : public Entity {
-        int width, height;
+        int width, height; 
         Color color;
     public:
         MyRectangle(int w, int h, Color col){width=w;height=h;color = col;}
         MyRectangle(float x,float y,int w, int h, Color col) : Entity(x,y) {width=w;height=h;color = col;}
-        void update() override {}
+        void update(float delta) override {}
 
         void draw() const {
             DrawRectangle(int(posX),int(posY),width,height,color);
@@ -145,11 +147,12 @@ class MyRectangle : public Entity {
 };
 
 class Player : public MyRectangle {
-    float move_d;
+    const float base_speed; 
+    float speed;
     public:
-        Player(int w, int h, Color col, float d) : MyRectangle(w,h,col) {move_d = d;}
-        Player(float x,float y,int w, int h, Color col, float d) : MyRectangle(x,y,w,h,col) {move_d = d;}
-        void update() override {move(getInput(),move_d*movSpeed());}
+        Player(int w, int h, Color col, float s) : MyRectangle(w,h,col), base_speed(s) {}
+        Player(float x,float y,int w, int h, Color col, float s) : MyRectangle(x,y,w,h,col), base_speed(s) {}
+        void update(float delta) override {movSpeed();move(getInput(),speed*delta);}
 
         Direction getInput(){
             bool up=false,down=false,left=false,right=false;
@@ -230,27 +233,45 @@ class Player : public MyRectangle {
 
             return NONE;
         }
-        float movSpeed(){
+        void movSpeed(){
             if (IsKeyDown(KEY_LEFT_SHIFT)){
-                    return 2;
+                    speed = base_speed*2;
                 }
                 else {
-                    return 1;
+                    speed = base_speed;
                 }
+            return;
         }
         
-        void modify_dist (float d){
-            move_d = d;
-        }
 };
 
 class Enemy : public MyRectangle {
-    float move_d;
+    float speed;
+    int born_date;
+    Direction move_dir;
     public:
-        Enemy(int w, int h, Color col, float d) : MyRectangle(w,h,col) {move_d = d;}
-        Enemy(float x,float y,int w, int h, Color col, float d) : MyRectangle(x,y,w,h,col) {move_d = d;}
+        Enemy(int w, int h, Color col, float s) : MyRectangle(w,h,col) {
+            speed=s;
+            auto now = system_clock::now();
+            born_date = duration_cast<milliseconds>(now.time_since_epoch()).count();
+            move_dir = NONE;
+        }
+        Enemy(float x,float y,int w, int h, Color col, float s) : MyRectangle(x,y,w,h,col) {
+            speed=s;
+            auto now = system_clock::now();
+            born_date = duration_cast<milliseconds>(now.time_since_epoch()).count();
+            move_dir = NONE;
+        }
 
-        void update() override {move(random_dir(),move_d);}
+        void update(float delta) override {
+            move(move_dir,speed*delta);
+            auto now = system_clock::now();
+            int now_millis = duration_cast<milliseconds>(now.time_since_epoch()).count();
+            if (now_millis - born_date >= 200){
+                move_dir = random_dir();
+                born_date = now_millis;
+            }
+        }
 };
 
 void backgroundDraw(Color color, const char *texto, int posX, int posY, int fontsize, Color textCol){
@@ -276,29 +297,30 @@ int main()
     float player_posX = SCREEN_WIDTH/2-player_width/2;
     float player_posY = SCREEN_HEIGHT/2-player_height/2;
 
-    float mov_amount = 3;
+    float speed = 500;
     Direction move = NONE;
 
     Color player_col = GREEN;
 
     vector<unique_ptr<Entity>> entities; //vector de entidades
 
-    entities.push_back(make_unique<Player>(player_posX, player_posY, player_width, player_height, player_col, mov_amount));
+    entities.push_back(make_unique<Player>(player_posX, player_posY, player_width, player_height, player_col, speed));
 
     float enemy_posX = random_int(SCREEN_WIDTH);
     float enemy_posY = random_int(SCREEN_HEIGHT);
     int enemy_width = player_width/2;
     int enemy_height = player_height/2;
     Color enemy_col = RED;
-    entities.push_back(make_unique<Enemy>(enemy_posX, enemy_posY, enemy_width, enemy_height, enemy_col, mov_amount));
+    entities.push_back(make_unique<Enemy>(enemy_posX, enemy_posY, enemy_width, enemy_height, enemy_col, speed));
 
     float deltaTime;
 
     while (!WindowShouldClose())
     {
         deltaTime = GetFrameTime();
+        //cout << deltaTime << '\n';
         for (auto& e : entities){ // como recorrer vector
-            e->update();
+            e->update(deltaTime);
             // for (auto it = entities.begin(); it != entities.end(); ) {
             //     if (/* condición para borrar */) {
             //         it = entities.erase(it); // borra y devuelve el siguiente
