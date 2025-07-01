@@ -66,3 +66,14 @@ void Entity::bounds_check_y(float &y) {
         posY = y;
     }
 }
+
+
+//Funciones que ayudan al entity manager
+
+void Entity::markForDeletion(){
+    toBeDeleted = true;
+}
+
+bool Entity::isMarkedForDeletion() const {
+    return toBeDeleted;
+}

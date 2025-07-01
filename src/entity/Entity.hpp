@@ -12,6 +12,7 @@ enum class EntityType {
 class Entity {
 protected:
     float posX, posY;
+    bool toBeDeleted = false;
 public:
     Entity();
     Entity(float x, float y);
@@ -29,4 +30,7 @@ public:
     virtual void update(float delta) = 0;
     virtual EntityType get_type() const = 0;
     virtual Rectangle getBoundingBox() const = 0;
+
+    void markForDeletion();
+    bool isMarkedForDeletion() const;
 };
