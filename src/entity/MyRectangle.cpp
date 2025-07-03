@@ -2,6 +2,7 @@
 
 #include "entity/MyRectangle.hpp"
 #include "Constants.hpp"
+using namespace Constants;
 
 // Constructor mínimo, sin posicion
 MyRectangle::MyRectangle(int w, int h, Color col) : width(w), height(h), color(col) {}

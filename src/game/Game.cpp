@@ -4,6 +4,8 @@
 #include <string>
 
 #include "Constants.hpp"
+using namespace Constants;
+
 #include "game/game.hpp"
 #include "entity/Player.hpp"
 

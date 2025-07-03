@@ -23,13 +23,8 @@ EntityType Player::get_type() const{
 
 // función que toma el input por teclado y cambia dirmov del player
 Direction Player::getInput() {
-    bool up=false,down=false,left=false,right=false;
-    if (IsKeyDown(KEY_DOWN)){
-        down = true;
-    }
-    if (IsKeyDown(KEY_UP)){
-        up = true;
-    }
+    bool left=false,right=false;
+
     if (IsKeyDown(KEY_RIGHT)){
         right = true;
     }
@@ -37,20 +32,9 @@ Direction Player::getInput() {
         left = true;
     }
 
-    Direction dirv = NONE, dirh = NONE;
+    Direction dirh = NONE;
 
 
-    // vertical direction
-    if ((up && down) || (!up && !down)){
-        dirv = NONE;
-    }
-    else if (up){
-        dirv = UP;
-    }
-    else if (down){
-        dirv = DOWN;
-    }
-    
 
     //horizontal direction
     if ((left && right)||(!left && !right)){
@@ -63,43 +47,9 @@ Direction Player::getInput() {
         dirh = RIGHT;
     }
 
+   
 
-    // direction decider
-    if (dirv == NONE){
-    
-        return dirh;
-    }
-    else if (dirh == RIGHT){
-        if (dirv == UP){
-            return UP_RIGHT;
-        }
-        else {
-            return DOWN_RIGHT;
-        }
-    }
-    else if (dirh == LEFT){
-        if (dirv == UP){
-            return UP_LEFT;
-        }
-        else {
-            return DOWN_LEFT;
-        }
-    }
-    else if (dirv == UP){
-        return UP;
-    }
-    else if (dirv == DOWN){
-        return DOWN;
-    }
-    
-    if (dirh == NONE){
-        return dirv;
-    }
-
-
-    
-
-    return NONE;
+    return dirh;
 }
 
 
@@ -112,4 +62,19 @@ void Player::movSpeed() {
             speed = base_speed;
         }
     return;
+}
+
+// Función que lanza y crea el anzuelo
+std::unique_ptr<Hook> Player::fireHook() {
+    float hookX = get_posX() + width / 2;
+    float hookY = get_posY() + height + 4 * height;
+    return std::make_unique<Hook>(
+        hookX,
+        hookY,
+        static_cast<float>(width) / 10.0f,
+        static_cast<float>(height) / 10.0f,
+        color,
+        static_cast<float>(0),
+        static_cast<float>(0)
+    );
 }

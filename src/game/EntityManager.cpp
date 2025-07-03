@@ -5,7 +5,7 @@
 
 
 void EntityManager::add(std::unique_ptr<Entity> entity){
-    entities.push_back(entity);
+    entities.push_back(std::move(entity));
 }
 
 void EntityManager::removeMarked(){
@@ -19,7 +19,7 @@ void EntityManager::removeMarked(){
 }
 
 void EntityManager::updateAll(float delta){
-    for (auto it = entities.begin();it != entities.end();){
+    for (auto it = entities.begin();it != entities.end();++it){
         (*it)-> update(delta);
     }
 }
@@ -32,4 +32,13 @@ void EntityManager::drawAll() const{
     for (const auto& e : entities) {
         e -> draw();
     }
+}
+
+Entity* EntityManager::getPlayer() {
+    for (auto& entity : entities) {
+        if (entity->get_type() == EntityType::PLAYER) {
+            return entity.get();  // si entities es vector de unique_ptr
+        }
+    }
+    return nullptr;  // si no lo encontrás
 }

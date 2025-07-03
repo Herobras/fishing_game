@@ -3,6 +3,7 @@
 
 #include "entity/Entity.hpp"
 #include "Constants.hpp"
+using namespace Constants;
 
 // Constructor por defecto
 Entity::Entity() : posX(0), posY(0) {}

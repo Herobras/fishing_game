@@ -2,17 +2,36 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Compilar con CMake manual",
+      "label": "Limpiar y crear build/",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-Command",
+        "if (Test-Path build) { Remove-Item -Recurse -Force build }; New-Item -ItemType Directory -Path build"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Configurar CMake con vcpkg",
+      "type": "shell",
+      "command": "cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake -A x64",
+      "options": {
+        "cwd": "${workspaceFolder}/build"
+      },
+      "dependsOn": ["Limpiar y crear build/"]
+    },
+    {
+      "label": "Compilar con CMake",
       "type": "shell",
       "command": "cmake --build .",
       "options": {
         "cwd": "${workspaceFolder}/build"
       },
+      "dependsOn": ["Configurar CMake con vcpkg"],
       "group": {
         "kind": "build",
         "isDefault": true
-      },
-      "problemMatcher": []
+      }
     }
   ]
 }

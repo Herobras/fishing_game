@@ -3,14 +3,14 @@
 
 #include "raylib.h"
 
-//Window config
-#define int SCREEN_WIDTH = 800;
-#define int SCREEN_HEIGHT = 600;
-#define Color BKG_COLOR = SKYBLUE;
+namespace Constants {//Window config
+inline constexpr int SCREEN_WIDTH = 800;
+inline constexpr int SCREEN_HEIGHT = 600;
+inline constexpr Color BKG_COLOR = WHITE;
 
 
 //Game config
-#define int MAX_ENEMIES = 10;
+inline constexpr int MAX_ENEMIES = 10;
 
-
+}
 
