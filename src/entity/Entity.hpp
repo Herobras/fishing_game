@@ -6,7 +6,8 @@
 
 enum class EntityType {
     PLAYER,
-    ENEMY
+    ENEMY,
+    HOOK
 };
 
 class Entity {
